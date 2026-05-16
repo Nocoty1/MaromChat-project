@@ -13,7 +13,6 @@ gui.py
 
 הקובץ משתמש בספריות מובנות בלבד:
 base64, tkinter, messagebox, filedialog.
-אין שימוש ב־Pillow.
 """
 
 import base64
