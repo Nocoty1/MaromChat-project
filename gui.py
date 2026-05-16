@@ -1,19 +1,3 @@
-"""
-gui.py
-ממשק המשתמש הגרפי של מערכת MaromChat.
-
-קובץ זה אחראי על:
-- הצגת מסך בית, התחברות והרשמה.
-- הצגת המסך הראשי של הצ׳אטים.
-- ניהול רשימות חברים, קבוצות וצ׳אטים.
-- שליחת הודעות דרך client.py.
-- קבלת הודעות מהשרת ועדכון המסך.
-- העלאת תמונות פרופיל ותמונות קבוצה בפורמט Base64.
-- הצגת הודעות שלא נקראו.
-
-הקובץ משתמש בספריות מובנות בלבד:
-base64, tkinter, messagebox, filedialog.
-"""
 
 import base64
 import tkinter as tk
@@ -76,10 +60,7 @@ class ChatGUI:
         self.image_cache = {}
 
         # global images stay alive: profile + opened chat header
-        self.image_refs = []
 
-        # list images are only for sidebar rows
-        self.list_image_refs = []
 
         self.home_screen()
         self.root.mainloop()
@@ -356,7 +337,7 @@ class ChatGUI:
     def chat_screen(self):
         """
         מציגה את המסך הראשי לאחר התחברות.
-        המסך כולל רשימת צ׳אטים, קבוצות, חברים, אזור הודעות ושדה כתיבה.
+        המסך כולל רשימת צ׳אטים, קבוצוget_my_profile_imageת, חברים, אזור הודעות ושדה כתיבה.
         """
         self.clear()
 
@@ -519,7 +500,7 @@ class ChatGUI:
         """
         מנקה את רשימת הפריטים בצד שמאל לפני ציור מחדש.
         """
-        self.list_image_refs = []
+
 
         for widget in self.items_frame.winfo_children():
             widget.destroy()
