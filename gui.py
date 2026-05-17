@@ -420,10 +420,6 @@ class ChatGUI:
         btn_create_invite.pack(side="left", padx=(0, 4))
         self.style_hover_button(btn_create_invite, "#1f2c33", "#2a3942")
 
-        btn_join = tk.Button(actions, text="Join", fg="white", bd=0, cursor="hand2",
-                             command=self.join_group, padx=10, pady=8)
-        btn_join.pack(side="left")
-        self.style_hover_button(btn_join, "#1f2c33", "#2a3942")
 
         right = tk.Frame(self.root, bg="#0b141a")
         right.pack(side="right", fill="both", expand=True)
@@ -772,13 +768,6 @@ class ChatGUI:
             confirm_callback=lambda members: self.client.create_group_with_friends(name, members)
         )
 
-    def join_group(self):
-        """
-        שולחת בקשה להצטרפות לקבוצה לפי שם שהוזן.
-        """
-        name = self.e_group.get().strip()
-        if name:
-            self.client.join_group(name)
 
     def invite_to_current_group(self):
         """
