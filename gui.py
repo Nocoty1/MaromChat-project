@@ -90,6 +90,10 @@ class ChatGUI:
         widget.bind("<Enter>", lambda e: widget.configure(bg=hover_bg))
         widget.bind("<Leave>", lambda e: widget.configure(bg=normal_bg))
 
+    def is_valid_name(self, name: str) -> bool:
+        invalid_chars = ["|", ",", ":"]
+        return bool(name.strip()) and not any(char in name for char in invalid_chars)
+
     def reset_chat_view(self):
         """
         מאפסת את אזור הצ׳אט.
@@ -777,20 +781,19 @@ class ChatGUI:
         self.client.send_friend_request(self.last_search_user)
 
     def create_group(self):
-        """
-        יוצרת קבוצה חדשה לפי השם שהוזן בשדה הקבוצה.
-        """
         name = self.e_group.get().strip()
-        if name:
-            self.client.create_group(name)
+
+        if not self.is_valid_name(name):
+            messagebox.showerror("Error", "Group name cannot contain | , :")
+            return
+
+        self.client.create_group(name)
 
     def create_group_invite(self):
-        """
-        יוצרת קבוצה חדשה ומאפשרת לבחור חברים להזמנה.
-        """
         name = self.e_group.get().strip()
-        if not name:
-            messagebox.showerror("Error", "Enter a group name first.")
+
+        if not self.is_valid_name(name):
+            messagebox.showerror("Error", "Group name cannot contain | , :")
             return
 
         self.open_member_picker_window(
@@ -799,7 +802,6 @@ class ChatGUI:
             confirm_text="Create",
             confirm_callback=lambda members: self.client.create_group_with_friends(name, members)
         )
-
 
     def invite_to_current_group(self):
         """
@@ -930,27 +932,6 @@ class ChatGUI:
         if msg == "LOGIN_OK":
             self.chat_screen()
             self.client.get_my_profile_image()
-            if msg.startswith("UNREAD_ALL|"):
-                packed = msg.split("|", 1)[1].strip()
-                self.unread = {}
-
-                if packed:
-                    for part in packed.split(","):
-                        if "=" in part:
-                            group_name, count = part.split("=", 1)
-                            try:
-                                self.unread[group_name] = int(count)
-                            except ValueError:
-                                pass
-
-                if self.current_group in self.unread:
-                    self.unread.pop(self.current_group, None)
-
-                # לא מרעננים את הרשימה בזמן פתיחת צ׳אט כדי למנוע הבהוב
-                if not self.is_opening_chat:
-                    self.redraw_current_list_only()
-
-                return
 
         if msg == "LOGIN_FAIL":
             messagebox.showerror("Error", "Invalid username or password.")
