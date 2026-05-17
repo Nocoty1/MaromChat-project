@@ -533,32 +533,57 @@ class ChatGUI:
         top_line = tk.Frame(textcol, bg="#111b21")
         top_line.pack(fill="x")
 
-        lbl_title = tk.Label(top_line, text=title, fg="white",
-                             bg="#111b21", font=("Arial", 12, "bold"))
+        display_title = title
+        if len(display_title) > 16:
+            display_title = display_title[:16] + "..."
+
+        lbl_title = tk.Label(
+            top_line,
+            text=display_title,
+            fg="white",
+            bg="#111b21",
+            font=("Arial", 12, "bold"),
+            anchor="w"
+        )
         lbl_title.pack(side="left")
 
+        badge_label = None
         if badge:
-            badge_label = tk.Label(top_line, text=badge, fg="#cfd7de",
-                                   bg="#1f2c33", font=("Arial", 9, "bold"),
-                                   padx=8, pady=2)
+            badge_label = tk.Label(
+                top_line,
+                text=badge,
+                fg="#cfd7de",
+                bg="#1f2c33",
+                font=("Arial", 9, "bold"),
+                padx=8,
+                pady=2
+            )
             badge_label.pack(side="left", padx=(8, 0))
 
         unread_label = None
         if unread_count > 0:
-            unread_label = tk.Label(top_line, text=f"● {unread_count}",
-                                    fg="#00c49a", bg="#111b21",
-                                    font=("Arial", 10, "bold"))
+            unread_label = tk.Label(
+                top_line,
+                text=f"● {unread_count}",
+                fg="#00c49a",
+                bg="#111b21",
+                font=("Arial", 10, "bold")
+            )
             unread_label.pack(side="right", padx=(0, 8))
 
-        lbl_sub = tk.Label(textcol, text=subtitle,
-                           fg="#9aa4ad", bg="#111b21",
-                           font=("Arial", 10))
+        lbl_sub = tk.Label(
+            textcol,
+            text=subtitle,
+            fg="#9aa4ad",
+            bg="#111b21",
+            font=("Arial", 10)
+        )
         lbl_sub.pack(anchor="w", pady=(4, 0))
 
         def set_bg(bg):
-            for w in (row, card, inner, textcol, top_line,
-                      avatar, lbl_title, lbl_sub):
+            for w in (row, card, inner, textcol, top_line, avatar, lbl_title, lbl_sub):
                 w.config(bg=bg)
+
             if unread_label:
                 unread_label.config(bg=bg)
 
@@ -568,8 +593,15 @@ class ChatGUI:
         def on_leave(_):
             set_bg("#111b21")
 
-        for widget in (row, card, inner, textcol,
-                       top_line, avatar, lbl_title, lbl_sub):
+        clickable_widgets = [row, card, inner, textcol, top_line, avatar, lbl_title, lbl_sub]
+
+        if badge_label:
+            clickable_widgets.append(badge_label)
+
+        if unread_label:
+            clickable_widgets.append(unread_label)
+
+        for widget in clickable_widgets:
             widget.bind("<Enter>", on_enter)
             widget.bind("<Leave>", on_leave)
             widget.bind("<Button-1>", lambda e: on_click())
