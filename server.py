@@ -244,17 +244,40 @@ class ChatServer:
         # ---------- FRIEND REQUEST ----------
         elif cmd == "FRIEND_REQUEST":
             parts = message.split("|", 1)
-            to_user = parts[1]
+            if len(parts) < 2:
+                return
+
+            to_user = parts[1].strip()
 
             result = self.db.send_friend_request(user, to_user)
             self.queue_send(sock, f"FRIEND_REQUEST_RESULT|{result}")
 
+            if result == "OK":
+                self.push_friend_requests_updated(to_user)
+
+
+        elif cmd == "FRIEND_REQUESTS":
+            requests = self.db.list_incoming_requests(user)
+            self.queue_send(sock, "FRIEND_REQUESTS|" + ",".join(requests))
+
+
         elif cmd == "FRIEND_ACCEPT":
             parts = message.split("|", 1)
-            from_user = parts[1]
+            if len(parts) < 2:
+                return
+
+            from_user = parts[1].strip()
 
             ok = self.db.accept_friend_request(user, from_user)
-            self.queue_send(sock, "FRIEND_ACCEPT_OK" if ok else "FRIEND_ACCEPT_FAIL")
+
+            if ok:
+                self.queue_send(sock, "FRIEND_ACCEPT_OK")
+
+                self.push_friend_requests_updated(user)
+                self.push_friends_updated(user)
+                self.push_friends_updated(from_user)
+            else:
+                self.queue_send(sock, "FRIEND_ACCEPT_FAIL")
 
         # ---------- READ ----------
         elif cmd == "MARK_READ":
