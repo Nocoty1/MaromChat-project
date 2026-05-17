@@ -990,8 +990,7 @@ class ChatGUI:
             return
 
         if msg == "FRIEND_REQUESTS_UPDATED":
-            if self.active_list == "friends":
-                self.client.get_friend_requests()
+            self.client.get_friend_requests()
             return
 
         if msg == "FRIENDS_UPDATED":
@@ -1125,6 +1124,7 @@ class ChatGUI:
                 widget.destroy()
 
             requests = [x for x in packed.split(",") if x.strip()] if packed else []
+
             if not requests:
                 tk.Label(self.req_box, text="No requests.", fg="#cfd7de", bg="#111b21").pack(anchor="w")
                 return
@@ -1135,13 +1135,20 @@ class ChatGUI:
 
                 tk.Label(line, text=username, fg="white", bg="#111b21").pack(side="left")
 
-                btn = tk.Button(line, text="Accept", fg="white", bd=0, cursor="hand2",
-                                command=lambda u=username: self.client.accept_friend(u),
-                                padx=10, pady=6)
+                btn = tk.Button(
+                    line,
+                    text="Accept",
+                    fg="white",
+                    bd=0,
+                    cursor="hand2",
+                    command=lambda u=username: self.client.accept_friend(u),
+                    padx=10,
+                    pady=6
+                )
                 btn.pack(side="right")
                 self.style_hover_button(btn, "#00a884", "#00c49a")
-            return
 
+            return
         if msg in ("FRIEND_ACCEPT_OK", "FRIEND_ACCEPT_FAIL"):
             messagebox.showinfo("Friends", msg)
             return
