@@ -402,6 +402,13 @@ class ChatGUI:
         )
         self.items_canvas.create_window((0, 0), window=self.items_frame, anchor="nw")
         self.items_canvas.configure(yscrollcommand=scrollbar.set)
+        self.items_canvas.bind(
+            "<MouseWheel>",
+            lambda e: self.items_canvas.yview_scroll(
+                int(-1 * (e.delta / 120)),
+                "units"
+            )
+        )
 
         self.items_canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
@@ -925,55 +932,72 @@ class ChatGUI:
 
     def receive_message(self, msg: str):
         """
-        מטפלת בכל הודעה שמגיעה מהשרת.
-        בהתאם לסוג ההודעה היא מעדכנת מסכים, מציגה הודעות,
-        מרעננת רשימות, מעדכנת unread ומציגה הודעות שגיאה או הצלחה.
+        מטפלת בכל הודעה שמגיעה מהשרת ומעדכנת את המסך בהתאם.
         """
+
+        # התחברות הצליחה - מעבר למסך הראשי ובקשת תמונת פרופיל
         if msg == "LOGIN_OK":
             self.chat_screen()
             self.client.get_my_profile_image()
 
+        # התחברות נכשלה - הצגת שגיאה
         if msg == "LOGIN_FAIL":
             messagebox.showerror("Error", "Invalid username or password.")
             return
 
+        # הרשמה הצליחה - הצגת הודעת הצלחה
         if msg == "REG_OK":
             messagebox.showinfo("OK", "Registered successfully. Now login.")
             return
 
+        # הרשמה נכשלה - הצגת שגיאה
         if msg == "REG_FAIL":
             messagebox.showerror("Error", "Username already exists.")
             return
 
+        # קבלת תמונת פרופיל ושמירתה בתצוגה
         if msg.startswith("MY_PROFILE_IMG|"):
             self.my_profile_img_b64 = msg.split("|", 1)[1]
             self.refresh_my_profile_avatar()
             return
 
+
+        # עדכון תמונת פרופיל הצליח - רענון התמונה ורשימת החברים
         if msg == "PROFILE_IMG_OK":
             messagebox.showinfo("Profile", "Profile image updated.")
             self.client.get_my_profile_image()
             self.client.get_friends()
             return
 
+
+        # עדכון תמונת פרופיל נכשל
         if msg == "PROFILE_IMG_FAIL":
             messagebox.showerror("Profile", "Could not update profile image.")
             return
 
+
+        # עדכון תמונת קבוצה הצליח - רענון קבוצות ותמונת כותרת
         if msg == "GROUP_IMG_OK":
             messagebox.showinfo("Group", "Group image updated.")
             self.client.my_groups()
             self.refresh_header_avatar()
             return
 
+
+
+        # עדכון תמונת קבוצה נכשל
         if msg == "GROUP_IMG_FAIL":
             messagebox.showerror("Group", "Could not update group image.")
             return
 
+
+        # יש שינוי בבקשות החברות - מבקש מחדש את הרשימה
         if msg == "FRIEND_REQUESTS_UPDATED":
             self.client.get_friend_requests()
             return
 
+
+        # רשימת החברים השתנתה - מרענן חברים ותצוגה
         if msg == "FRIENDS_UPDATED":
             self.client.get_friends()
             if self.active_list == "chats":
@@ -981,17 +1005,22 @@ class ChatGUI:
             self.refresh_header_avatar()
             return
 
-        if msg.startswith("INVITE_OK|"):
-            added = msg.split("|", 1)[1]
-            messagebox.showinfo("Invite", f"Invited: {added}")
+
+        # הזמנה לקבוצה הצליחה - מציג הודעה ומרענן קבוצות
+        if msg.startswith("INVITE_OK"):
+            added = msg.split("|", 1)[1] if "|" in msg else ""
+            messagebox.showinfo("Invite", f"Invited: {added}" if added else "Invite sent.")
             if self.active_list == "groups":
                 self.client.my_groups()
             return
 
+        # הזמנה לקבוצה נכשלה
         if msg.startswith("INVITE_FAIL"):
             messagebox.showerror("Invite", msg)
             return
 
+
+        # יציאה מקבוצה הצליחה - איפוס הצ׳אט ורענון קבוצות
         if msg == "LEAVE_OK":
             messagebox.showinfo("Group", "You left the group.")
             self.reset_chat_view()
@@ -999,10 +1028,13 @@ class ChatGUI:
             self.client.unread_all()
             return
 
+        # יציאה מקבוצה נכשלה
         if msg == "LEAVE_FAIL":
             messagebox.showerror("Group", "Could not leave the group.")
             return
 
+
+        # עדכון מספר ההודעות שלא נקראו
         if msg.startswith("UNREAD_ALL|"):
             packed = msg.split("|", 1)[1].strip()
             self.unread = {}
@@ -1022,6 +1054,8 @@ class ChatGUI:
             self.redraw_current_list_only()
             return
 
+
+        # קבלת רשימת קבוצות ועדכון התצוגה
         if msg.startswith("MYGROUPS|"):
             packed = msg.split("|", 1)[1]
 
@@ -1031,7 +1065,14 @@ class ChatGUI:
 
             self.last_groups_hash = packed
 
-            items = [x for x in packed.split(",") if x.strip()] if packed else []
+            if packed:
+                items = []
+
+                for x in packed.split(","):
+                    if x.strip():
+                        items.append(x)
+            else:
+                items = []
 
             parsed = []
             for item in items:
@@ -1047,6 +1088,8 @@ class ChatGUI:
 
             return
 
+
+        # קבלת רשימת חברים ועדכון התצוגה
         if msg.startswith("FRIENDS|"):
             packed = msg.split("|", 1)[1]
 
@@ -1072,6 +1115,8 @@ class ChatGUI:
 
             return
 
+
+        # פתיחת צ׳אט פרטי הצליחה
         if msg.startswith("DM_OK|"):
             parts = msg.split("|")
             if len(parts) >= 3:
@@ -1080,21 +1125,28 @@ class ChatGUI:
                 self.open_group(group_name, friend)
             return
 
+        # פתיחת צ׳אט פרטי נכשלה
         if msg == "DM_FAIL":
             messagebox.showerror("Error", "You can only open a chat with a friend.")
             return
 
+        # תוצאת חיפוש משתמש
         if msg.startswith("SEARCH_RESULT|"):
             found_user = msg.split("|", 1)[1].strip()
             self.last_search_user = found_user
             self.lbl_search_res.config(text=("Found: " + found_user) if found_user else "No such user.")
             return
 
+
+        # תוצאה של שליחת בקשת חברות
         if msg.startswith("FRIEND_REQUEST_RESULT|"):
             result = msg.split("|", 1)[1]
             messagebox.showinfo("Friend Request", result)
             return
 
+
+
+        # קבלת בקשות חברות והצגתן במסך Friends
         if msg.startswith("FRIEND_REQUESTS|"):
             if self.active_list != "friends":
                 return
@@ -1130,11 +1182,16 @@ class ChatGUI:
                 self.style_hover_button(btn, "#00a884", "#00c49a")
 
             return
+
+
+        # תוצאה של אישור בקשת חברות
         if msg in ("FRIEND_ACCEPT_OK", "FRIEND_ACCEPT_FAIL"):
             messagebox.showinfo("Friends", msg)
             return
 
-        if msg in ("GROUP_OK", "GROUP_EXISTS", "JOIN_OK", "MARK_READ_OK", "MARK_READ_FAIL"):
+
+        # טיפול כללי בעדכוני קבוצה, סימון כנקרא ורענון רשימות
+        if msg in ("GROUP_OK", "GROUP_EXISTS", "MARK_READ_OK", "MARK_READ_FAIL"):
             if self.active_list == "groups":
                 self.client.my_groups()
             if self.active_list == "chats":
@@ -1145,18 +1202,25 @@ class ChatGUI:
             self.client.unread_all()
             return
 
+
+
+        # בדיקה האם ההודעה היא הודעת צ׳אט רגילה
         group_name = self.parse_group_name_from_message(msg)
 
+
+        # אם ההודעה לא שייכת לצ׳אט הפתוח, מעדכנים unread בלבד
         if group_name:
             if group_name != self.current_group:
                 self.client.unread_all()
                 return
 
+            # אם ההודעה שייכת לצ׳אט הפתוח, מציגים אותה במסך
             self.chat_area.config(state="normal")
             self.chat_area.insert("end", msg + "\n")
             self.chat_area.config(state="disabled")
             self.chat_area.see("end")
 
+            # סימון ההודעה כנקראה ורענון הרשימה
             self.client.mark_read(group_name)
             self.unread.pop(group_name, None)
             self.redraw_current_list_only()
