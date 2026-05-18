@@ -5,6 +5,7 @@ from tkinter import messagebox, filedialog
 from client import MaromChatClient
 
 
+
 class ChatGUI:
     """
     מחלקה ראשית שאחראית על כל ממשק המשתמש של MaromChat.
