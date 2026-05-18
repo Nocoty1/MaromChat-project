@@ -3,6 +3,7 @@ import threading
 from security import xor_cipher
 
 
+
 class MaromChatClient:
     def __init__(self, gui, host="127.0.0.1", port=5555):
         self.gui = gui
