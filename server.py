@@ -156,7 +156,9 @@ class ChatServer:
                 return
             group_name = parts[1]
 
-            for sender, content, _, _ in self.db.get_messages(group_name):
+            for row in self.db.get_messages(group_name):
+                sender = row[0]
+                content = row[1]
                 self.queue_send(sock, f"[{group_name}] {sender}: {content}")
 
         # ---------- CREATE GROUP ----------
