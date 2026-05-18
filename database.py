@@ -42,12 +42,12 @@ class Database:
             """)
 
             cur.execute("""
+            
             CREATE TABLE IF NOT EXISTS messages(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 group_name TEXT,
                 sender TEXT,
-                content TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                content TEXT
             )
             """)
 
@@ -218,7 +218,7 @@ class Database:
             cur = self.conn.cursor()
             cur.execute("""
                 SELECT gm.group_name, g.img_b64
-                FROM group_members gm
+                FROM group_members gm  
                 LEFT JOIN groups g ON g.name = gm.group_name
                 WHERE gm.username=?
                 ORDER BY gm.group_name ASC
@@ -248,7 +248,7 @@ class Database:
         with self.lock:
             cur = self.conn.cursor()
             cur.execute("""
-                SELECT sender, content, timestamp, id
+                SELECT sender, content, id
                 FROM messages
                 WHERE group_name=?
                 ORDER BY id DESC
@@ -263,18 +263,6 @@ class Database:
             row = cur.fetchone()
             return int(row[0]) if row and row[0] is not None else 0
 
-    def get_last_message_timestamp(self, group_name: str) -> str:
-        with self.lock:
-            cur = self.conn.cursor()
-            cur.execute("""
-                SELECT timestamp
-                FROM messages
-                WHERE group_name=?
-                ORDER BY id DESC
-                LIMIT 1
-            """, (group_name,))
-            row = cur.fetchone()
-            return row[0] if row else ""
 
     # =========================================================
     # FRIENDS
