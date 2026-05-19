@@ -3,7 +3,6 @@ import threading
 from security import xor_cipher
 
 
-
 class MaromChatClient:
     def __init__(self, gui, host="127.0.0.1", port=5555):
         self.gui = gui
@@ -59,8 +58,6 @@ class MaromChatClient:
     def create_group_with_friends(self, group_name: str, members: list[str]):
         self.send(f"CREATEGROUP2|{group_name}|{','.join(members)}")
 
-    def join_group(self, group_name: str):
-        self.send(f"JOINGROUP|{group_name}")
 
     def leave_group(self, group_name: str):
         self.send(f"LEAVEGROUP|{group_name}")
