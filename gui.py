@@ -5,7 +5,6 @@ from tkinter import messagebox, filedialog
 from client import MaromChatClient
 
 
-
 class ChatGUI:
     """
     מחלקה ראשית שאחראית על כל ממשק המשתמש של MaromChat.
@@ -992,10 +991,6 @@ class ChatGUI:
             return
 
 
-        # יש שינוי בבקשות החברות - מבקש מחדש את הרשימה
-        if msg == "FRIEND_REQUESTS_UPDATED":
-            self.client.get_friend_requests()
-            return
 
 
         # רשימת החברים השתנתה - מרענן חברים ותצוגה
@@ -1145,7 +1140,10 @@ class ChatGUI:
             messagebox.showinfo("Friend Request", result)
             return
 
-
+        # יש שינוי בבקשות החברות - מבקש מחדש את הרשימה
+        if msg == "FRIEND_REQUESTS_UPDATED":
+            self.client.get_friend_requests()
+            return
 
         # קבלת בקשות חברות והצגתן במסך Friends
         if msg.startswith("FRIEND_REQUESTS|"):
