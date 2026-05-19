@@ -1,8 +1,8 @@
 import base64
 import hashlib
 
-
-
+# Simple shared key for project-level encryption
+# This is NOT strong real-world security, but good enough for a school project.
 SECRET_KEY = "maromchat_key_2026"
 
 
