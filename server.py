@@ -18,7 +18,6 @@ class ChatServer:
         self.clients_lock = threading.Lock()
 
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind((host, port))
         self.server_socket.listen()
         self.server_socket.setblocking(False)
